@@ -46,7 +46,6 @@ const defaultProjects: Project[] = [
 
 function readStorage<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
-
   try {
     const raw = window.localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
@@ -93,7 +92,7 @@ export function saveUser(user: User) {
 }
 
 export function getCurrentUser(): User | null {
-  if (typeof window === 'undefined') return defaultUser;
+  if (typeof window === 'undefined') return null;
 
   const raw = window.localStorage.getItem(STORAGE_KEYS.currentUser);
   if (!raw) return null;

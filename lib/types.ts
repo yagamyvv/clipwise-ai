@@ -1,30 +1,14 @@
 import { getCurrentUser, listUsers, saveUser, setCurrentUser } from './storage';
 import type { User } from './types';
 
-interface SignUpInput {
-  name: string;
-  email: string;
-  password: string;
-}
-
-interface SignInInput {
-  email: string;
-  password: string;
-}
-
-export async function signUpWithEmail({ name, email, password }: SignUpInput) {
-  if (!name.trim()) {
-    return { success: false, message: 'Please provide your full name.' };
-  }
-
-  if (!email.trim() || !password.trim()) {
-    return { success: false, message: 'Email and password are required.' };
-  }
+export async function signUpWithEmail({ name, email, password }: { name: string; email: string; password: string }) {
+  if (!name.trim()) return { success: false, message: 'Please provide your full name.' };
+  if (!email.trim() || !password.trim()) return { success: false, message: 'Email and password are required.' };
 
   const users = listUsers();
-  const userExists = users.some((entry) => entry.email.toLowerCase() === email.toLowerCase());
+  const exists = users.some((entry) => entry.email.toLowerCase() === email.toLowerCase());
 
-  if (userExists) {
+  if (exists) {
     return { success: false, message: 'An account with this email already exists.' };
   }
 
@@ -37,23 +21,18 @@ export async function signUpWithEmail({ name, email, password }: SignUpInput) {
 
   saveUser(user);
   setCurrentUser(user);
-
   return { success: true, user };
 }
 
-export async function signInWithEmail({ email, password }: SignInInput) {
-  if (!email.trim() || !password.trim()) {
-    return { success: false, message: 'Email and password are required.' };
-  }
+export async function signInWithEmail({ email, password }: { email: string; password: string }) {
+  if (!email.trim() || !password.trim()) return { success: false, message: 'Email and password are required.' };
 
   const users = listUsers();
   const matchingUser = users.find((entry) => entry.email.toLowerCase() === email.toLowerCase());
 
-  if (!matchingUser) {
-    return { success: false, message: 'No account found for that email.' };
-  }
+  if (!matchingUser) return { success: false, message: 'No account found for that email.' };
 
-  if (password !== 'demo1234' && password.length < 6) {
+  if (password.length < 6 && password !== 'demo1234') {
     return { success: false, message: 'Incorrect password.' };
   }
 

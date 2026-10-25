@@ -1,53 +1,69 @@
 "use client";
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import { createProject, getCurrentUser } from '@/lib/storage';
 
 export default function UploadPage() {
   const router = useRouter();
   const [title, setTitle] = useState('Creator deep dive interview');
   const [sourceUrl, setSourceUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [status, setStatus] = useState<'idle' | 'validating' | 'ready'>('idle');
   const [message, setMessage] = useState('');
+
+  const fileSummary = useMemo(() => {
+    if (!selectedFile) return 'No file selected';
+    const mb = selectedFile.size / (1024 * 1024);
+    return `${selectedFile.name} • ${mb.toFixed(1)} MB`;
+  }, [selectedFile]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const currentUser = getCurrentUser();
+
     if (!currentUser) {
       setMessage('Please sign in to create a project.');
+      router.push('/auth');
+      return;
+    }
+
+    if (!title.trim()) {
+      setMessage('Project title is required.');
+      return;
+    }
+
+    const hasFile = Boolean(selectedFile);
+    const trimmedUrl = sourceUrl.trim();
+
+    if (!hasFile && !trimmedUrl) {
+      setMessage('Add a video file or a valid YouTube URL.');
+      return;
+    }
+
+    if (selectedFile && selectedFile.size > 2 * 1024 * 1024 * 1024) {
+      setMessage('Video file is too large. Maximum size is 2 GB.');
+      return;
+    }
+
+    if (trimmedUrl && !/^https?:\/\//.test(trimmedUrl)) {
+      setMessage('Please provide a valid video URL.');
       return;
     }
 
     setStatus('validating');
 
-    if (!title.trim()) {
-      setMessage('Project title is required.');
-      setStatus('idle');
-      return;
-    }
-
-    if (!sourceUrl.trim() && !('videoFile' in event.target)) {
-      setMessage('Add either a video upload or a valid YouTube link.');
-      setStatus('idle');
-      return;
-    }
-
     const project = createProject({
       userId: currentUser.id,
-      title,
-      sourceType: sourceUrl.trim() ? 'youtube' : 'upload',
-      sourceValue: sourceUrl.trim() || 'local-upload',
+      title: title.trim(),
+      sourceType: trimmedUrl ? 'youtube' : 'upload',
+      sourceValue: trimmedUrl || selectedFile?.name || 'local-upload',
       duration: '00:32:14',
       status: 'analyzing',
       clips: [
-        {
-          id: `clip-${Date.now()}`,
-          title: 'Hook + key insight',
-          timestamp: '00:30 - 00:54',
-          status: 'ready',
-        },
+        { id: 'clip-1', title: 'Viral hook + insight', timestamp: '00:12 - 00:46', status: 'ready' },
+        { id: 'clip-2', title: 'High-retention takeaway', timestamp: '00:56 - 01:20', status: 'ready' },
       ],
     });
 
@@ -72,19 +88,35 @@ export default function UploadPage() {
             <div className="space-y-5">
               <div>
                 <label className="mb-2 block text-sm text-zinc-300">Project title</label>
-                <input value={title} onChange={(event) => setTitle(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3 outline-none" placeholder="e.g. Marketing breakdown reel" />
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3 outline-none"
+                  placeholder="e.g. Marketing breakdown reel"
+                />
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-zinc-300">Import video</label>
+                <label className="mb-2 block text-sm text-zinc-300">Upload video</label>
                 <div className="rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-5">
-                  <input type="file" accept="video/*" className="w-full cursor-pointer text-zinc-400" />
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                    className="w-full cursor-pointer text-zinc-400"
+                  />
+                  <p className="mt-3 text-xs text-zinc-400">{fileSummary}</p>
                 </div>
               </div>
 
               <div>
                 <label className="mb-2 block text-sm text-zinc-300">YouTube URL (optional)</label>
-                <input value={sourceUrl} onChange={(event) => setSourceUrl(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3 outline-none" placeholder="https://youtu.be/..." />
+                <input
+                  value={sourceUrl}
+                  onChange={(event) => setSourceUrl(event.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3 outline-none"
+                  placeholder="https://youtu.be/..."
+                />
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 text-sm text-zinc-300">
@@ -99,6 +131,7 @@ export default function UploadPage() {
               <button type="submit" className="primary-button w-full" disabled={status === 'validating'}>
                 {status === 'validating' ? 'Validating...' : 'Analyze video'}
               </button>
+
               {message && <p className="text-sm text-primary-200">{message}</p>}
             </div>
           </form>
@@ -124,3 +157,4 @@ export default function UploadPage() {
     </main>
   );
 }
+

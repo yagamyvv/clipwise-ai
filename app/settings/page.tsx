@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { listProjects, type Project } from '@/lib/storage';
 
-export default function EditorPage({ params }: { params: { id: string } }) {
+export default function ProjectPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null);
-  const [title, setTitle] = useState('The 3 biggest mistakes creators make');
-  const [hook, setHook] = useState('Stop chasing hacks — build a repeatable system.');
-  const [subtitleColor, setSubtitleColor] = useState('#f5f3ff');
-  const [fontSize, setFontSize] = useState(26);
 
   useEffect(() => {
     const found = listProjects().find((item) => item.id === params.id);
@@ -17,81 +13,76 @@ export default function EditorPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   if (!project) {
-    return <div className="min-h-screen bg-[#0a0a12] text-white">Loading editor...</div>;
+    return (
+      <main className="min-h-screen bg-[#0a0a12] px-4 py-12 text-white">
+        <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+          <p className="text-2xl font-bold">Project not found</p>
+          <Link href="/dashboard" className="primary-button mt-6">Go back</Link>
+        </div>
+      </main>
+    );
   }
 
   return (
     <main className="min-h-screen bg-[#0a0a12] px-4 py-8 text-white md:px-6">
       <div className="mx-auto max-w-6xl">
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">Editor</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-zinc-500">Project details</p>
             <h1 className="mt-2 text-3xl font-black">{project.title}</h1>
           </div>
-          <Link href={`/projects/${project.id}`} className="secondary-button">Back to project</Link>
+          <div className="flex items-center gap-3">
+            <Link href={`/editor/${project.id}`} className="primary-button">Edit clip</Link>
+            <Link href="/dashboard" className="secondary-button">Dashboard</Link>
+          </div>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="panel p-5">
-            <div className="space-y-5">
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">Clip title</label>
-                <input value={title} onChange={(event) => setTitle(event.target.value)} className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3" />
-              </div>
+            <div className="mb-5 flex items-center justify-between">
+              <p className="text-lg font-semibold">AI insights</p>
+              <span className="rounded-full border border-primary-500/30 bg-primary-500/10 px-3 py-1 text-xs uppercase tracking-[0.14em] text-primary-100">{project.status}</span>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">Hook</label>
-                <textarea value={hook} onChange={(event) => setHook(event.target.value)} className="min-h-[110px] w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3" />
+            <div className="rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-zinc-900 via-zinc-950 to-violet-950 p-4">
+              <div className="mb-4 flex items-center justify-between text-sm text-zinc-300">
+                <span>AI analysis</span>
+                <span>{project.duration}</span>
               </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm text-zinc-300">Subtitle color</label>
-                  <input type="color" value={subtitleColor} onChange={(event) => setSubtitleColor(event.target.value)} className="h-12 w-full rounded-xl border border-white/10 bg-transparent" />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm text-zinc-300">Font size</label>
-                  <input type="range" min={16} max={42} value={fontSize} onChange={(event) => setFontSize(Number(event.target.value))} className="w-full" />
+              <div className="h-56 rounded-[1.4rem] bg-gradient-to-br from-zinc-800 via-zinc-950 to-violet-950 p-4">
+                <div className="flex h-full items-end justify-between">
+                  <div>
+                    <div className="mb-3 rounded-full bg-primary-500/20 px-3 py-2 text-xs text-primary-100">Hook moment</div>
+                    <div className="rounded-full bg-white/5 px-3 py-2 text-xs text-zinc-200">{project.clips.length} highlight segments</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-zinc-200">00:31</div>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm text-zinc-300">Template</label>
-                <select className="w-full rounded-xl border border-white/10 bg-[#12131a] px-4 py-3">
-                  <option>Modern minimal</option>
-                  <option>Bold contrast</option>
-                  <option>Creator studio</option>
-                </select>
-              </div>
-
-              <button className="primary-button w-full">Apply changes</button>
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              {['Strong hook', 'Clear opinion', 'Pacing boost'].map((insight) => (
+                <div key={insight} className="rounded-2xl border border-white/10 bg-white/[0.02] p-3 text-sm text-zinc-200">{insight}</div>
+              ))}
             </div>
           </div>
 
-          <div className="panel overflow-hidden p-4">
-            <div className="mx-auto h-[620px] max-w-[340px] rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-900 via-zinc-900 to-violet-950 p-3 shadow-glow">
-              <div className="flex h-full flex-col justify-between rounded-[1.5rem] border border-white/10 bg-gradient-to-b from-zinc-900 to-zinc-950 p-4">
-                <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-zinc-300">
-                  <span>Clip</span>
-                  <span>9:16</span>
+          <div className="panel p-5">
+            <h2 className="text-xl font-bold">Generated clips</h2>
+            <div className="mt-5 space-y-4">
+              {(project.clips ?? []).map((clip) => (
+                <div key={clip.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold">{clip.title}</p>
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] uppercase tracking-[0.15em] text-emerald-200">{clip.status}</span>
+                  </div>
+                  <p className="mt-2 text-sm text-zinc-400">Timestamp: {clip.timestamp}</p>
+                  <div className="mt-4 flex gap-2">
+                    <Link href={`/editor/${project.id}`} className="secondary-button flex-1 justify-center">Preview</Link>
+                    <button className="primary-button flex-1 justify-center">Export</button>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="rounded-full bg-white/5 px-3 py-2 text-center text-[10px] uppercase tracking-[0.2em] text-primary-200">AI highlight</div>
-                  <h2 className="text-2xl font-black leading-tight">{title}</h2>
-                  <p className="text-sm text-zinc-300">{hook}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-center text-xs text-zinc-200">00:31</div>
-                <div
-                  className="rounded-2xl px-3 py-2 text-center font-semibold"
-                  style={{
-                    color: subtitleColor,
-                    fontSize: `${fontSize}px`,
-                    background: 'rgba(0,0,0,0.35)',
-                  }}
-                >
-                  Stop chasing hacks — build a repeatable system.
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
@@ -99,3 +90,4 @@ export default function EditorPage({ params }: { params: { id: string } }) {
     </main>
   );
 }
+
