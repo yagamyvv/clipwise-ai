@@ -3,15 +3,15 @@ import Link from 'next/link';
 const featureCards = [
   {
     title: 'AI highlight detection',
-    description: 'Identifies the most engaging moments from long-form content based on pacing, speaker emphasis, and sentiment. ',
+    description: 'Finds content spikes, emotional beats, and strategic moments for high-retention clips.',
   },
   {
     title: 'Auto subtitles',
-    description: 'Instant captions for reels, shorts and vertical videos with editable text and styling controls.',
+    description: 'Transcribes and styles subtitles for vertical video formats with mobile-first readability.',
   },
   {
-    title: 'Instant branded edits',
-    description: 'Use vertical templates, hooks, and CTA overlays to publish shorts without additional editing work.',
+    title: 'Branded editing',
+    description: 'Applies templates, hooks, and captions to turn raw footage into platform-ready short videos.',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function HomePage() {
             Turn every long video into <span className="gradient-text">viral clips</span>
           </h1>
           <p className="mt-5 max-w-lg text-base text-zinc-300 md:text-lg">
-            Clipwise helps content creators transform long-form videos into smart, polished short-form assets for TikTok, Reels, and Shorts with AI analysis, subtitles, and templates.
+            Clipwise helps creators transform long-form videos into engaging short-form assets for TikTok, Reels, and Shorts with AI analysis, subtitles, and templates.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/dashboard" className="primary-button text-sm">
@@ -123,7 +123,7 @@ export default function HomePage() {
         <div className="grid gap-5 md:grid-cols-3">
           {featureCards.map((card) => (
             <div key={card.title} className="panel p-6">
-              <div className="mb-5 h-12 w-12 rounded-2xl bg-primary-500/15 text-primary-100 flex items-center justify-center font-bold">AI</div>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-500/15 text-primary-100">AI</div>
               <h3 className="mb-2 text-xl font-semibold">{card.title}</h3>
               <p className="text-sm leading-6 text-zinc-300">{card.description}</p>
             </div>
@@ -168,3 +168,4 @@ export default function HomePage() {
     </main>
   );
 }
+
